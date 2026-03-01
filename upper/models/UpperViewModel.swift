@@ -68,7 +68,7 @@ class UpperViewModel: ObservableObject {
         sneakPeekTask = nil
         activeSneakPeek = nil
 
-        withAnimation(.bouncy) {
+        withAnimation(AnimationLibrary.notchOpen) {
             let targetSize = calculateDynamicNotchSize()
             
             let applyWindowResize: () -> Void = {
@@ -96,7 +96,7 @@ class UpperViewModel: ObservableObject {
         sneakPeekTask = nil
         activeSneakPeek = nil
 
-        withAnimation(.smooth) {
+        withAnimation(AnimationLibrary.notchClose) {
             let targetSize = getClosedNotchSize(screen: screen)
             notchSize = targetSize
             closedNotchSize = targetSize
@@ -111,7 +111,7 @@ class UpperViewModel: ObservableObject {
 
         let sneakSize = getSneakPeekSize(screen: screen, for: config.type)
 
-        withAnimation(.bouncy.speed(1.2)) {
+        withAnimation(AnimationLibrary.sneakPeekOpen) {
             activeSneakPeek = config
             notchSize = sneakSize
             state = .sneakPeek
@@ -123,7 +123,7 @@ class UpperViewModel: ObservableObject {
             try? await Task.sleep(for: .seconds(config.duration))
             guard let self, !Task.isCancelled else { return }
             if self.state == .sneakPeek {
-                withAnimation(.smooth) {
+                withAnimation(AnimationLibrary.sneakPeekClose) {
                     self.dismissSneakPeek()
                 }
             }

@@ -284,39 +284,4 @@ struct NotchContentView: View {
             lastHapticTime = now
         }
     }
-    
-    // MARK: - Views
-    
-    @ViewBuilder
-    private var openContent: some View {
-        VStack(spacing: 12) {
-            Spacer()
-                .frame(height: 24)
-
-            HStack(spacing: 12) {
-                placeholderSection(title: "Media", icon: "play.circle.fill")
-                placeholderSection(title: "Extensions", icon: "puzzlepiece.extension")
-            }
-
-            placeholderSection(title: "Drop Zone", icon: "arrow.down.doc")
-        }
-        .padding(.horizontal, 16)
-        .padding(.bottom, 12)
-    }
-    
-    @ViewBuilder
-    private func placeholderSection(title: String, icon: String) -> some View {
-        RoundedRectangle(cornerRadius: 10)
-            .fill(.gray.opacity(0.15))
-            .frame(maxWidth: .infinity, minHeight: 44)
-            .overlay {
-                HStack(spacing: 6) {
-                    Image(systemName: icon)
-                        .font(.system(size: 14))
-                    Text(title)
-                        .font(.system(size: 12, weight: .medium))
-                }
-                .foregroundStyle(.white.opacity(0.4))
-            }
-    }
 }
