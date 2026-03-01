@@ -6,8 +6,15 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		3464F72C2F4E62070085374D /* Defaults in Frameworks */ = {isa = PBXBuildFile; productRef = 3464F72B2F4E62070085374D /* Defaults */; };
+		3464F72E2F4E62070085374D /* DefaultsMacros in Frameworks */ = {isa = PBXBuildFile; productRef = 3464F72D2F4E62070085374D /* DefaultsMacros */; };
+		348A98AF2F4E4068009A8EB6 /* HANDOFF.md in Resources */ = {isa = PBXBuildFile; fileRef = 348A98AE2F4E4068009A8EB6 /* HANDOFF.md */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		34852D9D2F4E28FE001A0DA2 /* upper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = upper.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		348A98AE2F4E4068009A8EB6 /* HANDOFF.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = HANDOFF.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -23,6 +30,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3464F72C2F4E62070085374D /* Defaults in Frameworks */,
+				3464F72E2F4E62070085374D /* DefaultsMacros in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -34,6 +43,7 @@
 			children = (
 				34852D9F2F4E28FE001A0DA2 /* upper */,
 				34852D9E2F4E28FE001A0DA2 /* Products */,
+				348A98AE2F4E4068009A8EB6 /* HANDOFF.md */,
 			);
 			sourceTree = "<group>";
 		};
@@ -65,6 +75,8 @@
 			);
 			name = upper;
 			packageProductDependencies = (
+				3464F72B2F4E62070085374D /* Defaults */,
+				3464F72D2F4E62070085374D /* DefaultsMacros */,
 			);
 			productName = upper;
 			productReference = 34852D9D2F4E28FE001A0DA2 /* upper.app */;
@@ -94,6 +106,9 @@
 			);
 			mainGroup = 34852D942F4E28FE001A0DA2;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				3464F72A2F4E62070085374D /* XCRemoteSwiftPackageReference "Defaults" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 34852D9E2F4E28FE001A0DA2 /* Products */;
 			projectDirPath = "";
@@ -109,6 +124,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				348A98AF2F4E4068009A8EB6 /* HANDOFF.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -331,6 +347,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		3464F72A2F4E62070085374D /* XCRemoteSwiftPackageReference "Defaults" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sindresorhus/Defaults";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 9.0.6;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		3464F72B2F4E62070085374D /* Defaults */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3464F72A2F4E62070085374D /* XCRemoteSwiftPackageReference "Defaults" */;
+			productName = Defaults;
+		};
+		3464F72D2F4E62070085374D /* DefaultsMacros */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 3464F72A2F4E62070085374D /* XCRemoteSwiftPackageReference "Defaults" */;
+			productName = DefaultsMacros;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 34852D952F4E28FE001A0DA2 /* Project object */;
 }
