@@ -12,6 +12,8 @@ struct UpperHomeView: View {
     @EnvironmentObject var viewModel: UpperViewModel
     @ObservedObject var coordinator: UpperViewCoordinator = .shared
     
+    let albumArtNamespace: Namespace.ID
+    
     var body: some View {
         Group {
             if !coordinator.firstLaunch {
@@ -24,14 +26,13 @@ struct UpperHomeView: View {
     private var mainContent: some View {
         HStack(alignment: .top, spacing: 20) {
             if Defaults[.enableMinimalMode] {
-                MinimalMediaView()
+                MinimalMediaView(albumArtNamespace: albumArtNamespace)
             } else {
                 Text("Welcome to Upper")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundStyle(.white.opacity(0.8))
             }
         }
-        .background(.red)
         .transition(.opacity.animation(.smooth.speed(0.9))
             .combined(with: .blurReplace.animation(.smooth.speed(0.9)))
             .combined(with: .move(edge: .top))

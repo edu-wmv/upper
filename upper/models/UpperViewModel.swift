@@ -10,7 +10,7 @@ import Defaults
 import Combine
 
 @MainActor
-class UpperViewModel: ObservableObject {
+class UpperViewModel: NSObject, ObservableObject {
     @ObservedObject var coordinator = UpperViewCoordinator.shared
     var cancellables: Set<AnyCancellable> = []
 
@@ -24,6 +24,8 @@ class UpperViewModel: ObservableObject {
     @Published var screen: String?
     
     @Published var shouldRecheckHover: Bool = false
+    
+    @Published var isMediaOutputPopoverActive: Bool = false
 
     // MARK: - Sneak Peek
 
@@ -44,6 +46,8 @@ class UpperViewModel: ObservableObject {
     // MARK: - Init
 
     init(screen: String? = nil) {
+        super.init()
+        
         self.screen = screen
         notchSize = getClosedNotchSize()
         closedNotchSize = notchSize
@@ -156,7 +160,7 @@ class UpperViewModel: ObservableObject {
             let baseY = frame.maxY - notchSize.height
             let baseX = frame.midX - notchSize.width / 2
             
-            return position.y >= 0 && position.x >= baseX && position.x <= baseX + notchSize.width
+            return position.y >= baseY && position.x >= baseX && position.x <= baseX + notchSize.width
         }
         
         return false
@@ -167,7 +171,7 @@ class UpperViewModel: ObservableObject {
     
     private func calculateDynamicNotchSize() -> CGSize {
         let baseSize = Defaults[.enableMinimalMode] ? minimalOpenNotchSize : openNotchSize
-        var adjustedSize = baseSize
+        let adjustedSize = baseSize
         
         return adjustedSize
     }

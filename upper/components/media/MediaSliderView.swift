@@ -6,18 +6,69 @@
 //
 
 import SwiftUI
+import Defaults
 
 struct MediaSliderView: View {
+    // MARK: - Properties
     @Binding var value: Double
     @Binding var duration: Double
     @Binding var isDragging: Bool
     @Binding var lastDragged: Date
+    var color: NSColor
+    var currentDate: Date
+    let timestampDate: Date
+    let elapsedTime: Double
+    let playbackRate: Double
+    let isPlaying: Bool
+    var labelLayout: TimeLabelLayout = .stacked
+    var trailingLabel: TrailingLabel = .duration
+    var onValueChange: (Double) -> Void
     var restingTrackHeight: CGFloat = 5
     var draggingTrackHeight: CGFloat = 9
     
+    // MARK: - Enums
+    enum TimeLabelLayout {
+        case stacked
+        case inline
+    }
+    
+    enum TrailingLabel {
+        case duration
+        case remaining
+    }
+    
     var body: some View {
         Group {
-            inlineContent
+            switch labelLayout {
+            case .stacked:
+                stackedContent
+            case .inline:
+                inlineContent
+            }
+        }
+        .onChange(of: currentDate) { _, newDate in
+            guard !isDragging, timestampDate.timeIntervalSince(lastDragged) > -1 else { return }
+            value = MediaManager.shared.estimatedPlaybackPosition(at: newDate)
+        }
+        .onChange(of: isPlaying) { _, playing in
+            if !playing { value = MediaManager.shared.estimatedPlaybackPosition() }
+        }
+    }
+    
+    // MARK: - Content view
+    private var stackedContent: some View {
+        VStack(spacing: 6) {
+            sliderCore
+                .frame(height: sliderFrameHeight)
+            
+            HStack {
+                Text(timeString(from: value))
+                Spacer()
+                Text(trailingTimeText)
+            }
+            .fontWeight(.medium)
+            .foregroundStyle(.gray)
+            .font(.caption)
         }
     }
     
@@ -32,27 +83,36 @@ struct MediaSliderView: View {
                 .frame(height: sliderFrameHeight)
                 .frame(maxWidth: .infinity)
             
-            Text("-\(timeString(from: max(duration - value, 0)))")
+            Text(trailingTimeText)
                 .font(.system(size: 11, weight: .medium, design: .monospaced))
                 .foregroundStyle(.gray)
                 .frame(width: 48, alignment: .trailing)
-                
+            
         }
-    }
-    
-    private var sliderFrameHeight: CGFloat {
-        max(restingTrackHeight, draggingTrackHeight)
     }
     
     private var sliderCore: some View {
         CustomSlider(
             value: $value,
             range: 0 ... duration,
+            color: sliderTint,
             isDragging: $isDragging,
             lastDragged: $lastDragged,
+            onValueChange: onValueChange,
             restingTrackHeight: restingTrackHeight,
             draggingTrackHeight: draggingTrackHeight
         )
+        .animation(
+            !isDragging && isPlaying
+            ? .linear(duration: 1.0)
+            : nil,
+            value: value
+        )
+    }
+    
+    // MARK: - Helpers
+    private var sliderFrameHeight: CGFloat {
+        max(restingTrackHeight, draggingTrackHeight)
     }
     
     func timeString(from seconds: Double) -> String {
@@ -65,6 +125,27 @@ struct MediaSliderView: View {
             return String(format: "%d:%02d:%02d", hours, minutes, remainingSeconds)
         } else {
             return String(format: "%d:%02d", minutes, remainingSeconds)
+        }
+    }
+    
+    private var sliderTint: Color {
+        switch Defaults[.sliderColor] {
+        case .albumArt:
+            return Color(nsColor: color).ensureMinimumBrightness(factor: 0.8)
+        case .accent:
+            return .accentColor
+        case .white:
+            return .white
+        }
+    }
+    
+    private var trailingTimeText: String {
+        switch trailingLabel {
+        case .duration:
+            return timeString(from: duration)
+        case .remaining:
+            let remaining = max(duration - value, 0)
+            return "-\(timeString(from: remaining))"
         }
     }
 }

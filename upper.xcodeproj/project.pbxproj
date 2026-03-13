@@ -12,14 +12,51 @@
 		348A98AF2F4E4068009A8EB6 /* HANDOFF.md in Resources */ = {isa = PBXBuildFile; fileRef = 348A98AE2F4E4068009A8EB6 /* HANDOFF.md */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		34C8B8D62F550C5D00E0D171 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		34852D9D2F4E28FE001A0DA2 /* upper.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = upper.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		348A98AE2F4E4068009A8EB6 /* HANDOFF.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = HANDOFF.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+		34C8B9572F5E2B2800E0D171 /* Exceptions for "upper" folder in "Embed Frameworks" phase from "upper" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			attributesByRelativePath = {
+				"Resources/mediaremote-adapter/MediaRemoteAdapter.framework" = (CodeSignOnCopy, RemoveHeadersOnCopy, );
+			};
+			buildPhase = 34C8B8D62F550C5D00E0D171 /* Embed Frameworks */;
+			membershipExceptions = (
+				"Resources/mediaremote-adapter/MediaRemoteAdapter.framework",
+			);
+		};
+		34C8B95B2F5E2B4B00E0D171 /* Exceptions for "upper" folder in "Copy Bundle Resources" phase from "upper" target */ = {
+			isa = PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet;
+			buildPhase = 34852D9B2F4E28FE001A0DA2 /* Resources */;
+			membershipExceptions = (
+				"Resources/mediaremote-adapter/MediaRemoteAdapter.framework",
+			);
+		};
+/* End PBXFileSystemSynchronizedGroupBuildPhaseMembershipExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		34852D9F2F4E28FE001A0DA2 /* upper */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				34C8B95B2F5E2B4B00E0D171 /* Exceptions for "upper" folder in "Copy Bundle Resources" phase from "upper" target */,
+				34C8B9572F5E2B2800E0D171 /* Exceptions for "upper" folder in "Embed Frameworks" phase from "upper" target */,
+			);
 			path = upper;
 			sourceTree = "<group>";
 		};
@@ -65,6 +102,7 @@
 				34852D992F4E28FE001A0DA2 /* Sources */,
 				34852D9A2F4E28FE001A0DA2 /* Frameworks */,
 				34852D9B2F4E28FE001A0DA2 /* Resources */,
+				34C8B8D62F550C5D00E0D171 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -274,11 +312,23 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/upper/mediaremote-adapter",
+					"$(PROJECT_DIR)/Resources/mediaremote-adapter",
+					"$(PROJECT_DIR)/upper/Resources/mediaremote-adapter",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/upper/mediaremote-adapter/Versions/A",
+					"$(PROJECT_DIR)/upper/mediaremote-adapter/Versions/Current",
+					"$(PROJECT_DIR)/upper/mediaremote-adapter",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;
@@ -307,11 +357,23 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/upper/mediaremote-adapter",
+					"$(PROJECT_DIR)/Resources/mediaremote-adapter",
+					"$(PROJECT_DIR)/upper/Resources/mediaremote-adapter",
+				);
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/upper/mediaremote-adapter/Versions/A",
+					"$(PROJECT_DIR)/upper/mediaremote-adapter/Versions/Current",
+					"$(PROJECT_DIR)/upper/mediaremote-adapter",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 26.0;
 				MARKETING_VERSION = 1.0;

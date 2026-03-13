@@ -259,7 +259,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     private func calculateNotchSize() -> CGSize {
-        var baseSize = Defaults[.enableMinimalMode] ? minimalOpenNotchSize : openNotchSize
+        let baseSize = Defaults[.enableMinimalMode] ? minimalOpenNotchSize : openNotchSize
         
         return addShadowPadding(to: baseSize, isMinimal: Defaults[.enableMinimalMode])
     }

@@ -26,4 +26,13 @@ extension Defaults.Keys {
     static let showOnAllDisplays = Key<Bool>("showOnAllDisplays", default: false)
     static let autoSwitchDisplay = Key<Bool>("autoSwitchDisplay", default: false)
     
+    // MARK: Gestures
+    static let mediaGestureBehavior = Key<MediaSkipBehavior>("mediaGestureBehavior", default: .track)
+    
+    // MARK: Appearance
+    static let sliderColor = Key<SliderColorEnum>("sliderUIColor", default: .albumArt)
+    
+    // MARK: Media playback
+    static let mediaControlSlots = Key<[MediaControlButton]>("mediaControlSlots", default: MediaControlButton.defaultLayout)
+    
 }

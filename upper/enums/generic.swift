@@ -35,3 +35,20 @@ enum NotchHeightMode: String, Defaults.Serializable {
     case matchRealNotch = "Match real notch height"
     case custom = "Custom height"
 }
+
+enum SliderColorEnum: String, CaseIterable, Defaults.Serializable {
+    case white = "White"
+    case albumArt = "Match album art"
+    case accent = "Accent color"
+    
+    var localizedName: String {
+        switch self {
+        case .white:
+            return String(localized: "Standard")
+        case .albumArt:
+            return String(localized: "Match Album Art")
+        case .accent:
+            return String(localized: "Match Accent Color")
+        }
+    }
+}

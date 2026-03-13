@@ -21,6 +21,8 @@ struct NotchContentView: View {
     @State private var haptics: Bool = false
     @State private var lastHapticTime: Date = Date()
     
+    @Namespace var albumArtNamespace
+    
     @Default(.enableMinimalMode) var enableMinimalMode
     
     var dynamicNotchSize: CGSize {
@@ -156,7 +158,7 @@ struct NotchContentView: View {
                         Group {
                             switch coordinator.currentView {
                             case .home:
-                                UpperHomeView()
+                                UpperHomeView(albumArtNamespace: albumArtNamespace)
                             case .shelf:
                                 EmptyView()
                             case .sharing:
@@ -169,6 +171,14 @@ struct NotchContentView: View {
                 .zIndex(1)
             }
         }
+    }
+    
+    private func hasAnyActivePopovers() -> Bool {
+        return viewModel.isMediaOutputPopoverActive
+    }
+    
+    private func shouldPreventAutoClose() -> Bool {
+        coordinator.firstLaunch || hasAnyActivePopovers()
     }
     
     // MARK: - Shape
@@ -247,7 +257,7 @@ struct NotchContentView: View {
                         self.isHovering = false
                     }
                     
-                    if self.viewModel.state == .open {
+                    if self.viewModel.state == .open && !self.shouldPreventAutoClose() {
                         self.viewModel.close()
                     }
                 }
