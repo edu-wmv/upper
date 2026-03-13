@@ -46,7 +46,7 @@ struct MediaOutputSelectorPopover: View {
                         .contentShape(Circle())
                 }
                 .buttonStyle(.plain)
-                .selectionDisabled()
+                .focusable(false)
                 
                 Slider(
                     value: Binding(
@@ -113,6 +113,7 @@ struct MediaOutputSelectorPopover: View {
                                 )
                             }
                             .buttonStyle(.plain)
+                            .focusable(false)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)

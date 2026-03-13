@@ -29,4 +29,19 @@ class AppleScriptHelper {
     class func executeVoid(_ scriptText: String) async throws {
         _ = try await execute(scriptText)
     }
+
+    /// Sends a minimal Apple Event to Music to trigger the TCC automation permission dialog.
+    /// Returns the granted status and the underlying error if the request failed.
+    class func requestMusicAutomationPermission() async -> (granted: Bool, error: Error?) {
+        do {
+            try await executeVoid("""
+                tell application "Music"
+                    get version
+                end tell
+                """)
+            return (true, nil)
+        } catch {
+            return (false, error)
+        }
+    }
 }

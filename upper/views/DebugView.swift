@@ -12,6 +12,8 @@ struct DebugView: View {
     @ObservedObject var viewModel: UpperViewModel
     
     @Default(.enableMinimalMode) var enableMinimalMode: Bool
+    @State private var musicPermissionGranted: Bool? = nil
+    @State private var musicPermissionError: String? = nil
     
     var body: some View {
         VStack {
@@ -37,6 +39,50 @@ struct DebugView: View {
                         .onChange(of: enableMinimalMode) { _, newValue in
                             enableMinimalMode = newValue
                         }
+                }
+                
+                Divider()
+                
+                Text("Permissions")
+                VStack(spacing: 6) {
+                    HStack(spacing: 12) {
+                        Button("Request Music Automation") {
+                            musicPermissionGranted = nil
+                            musicPermissionError = nil
+                            Task {
+                                let result = await AppleScriptHelper.requestMusicAutomationPermission()
+                                await MainActor.run {
+                                    musicPermissionGranted = result.granted
+                                    if let error = result.error {
+                                        let nsError = error as NSError
+                                        let message = nsError.userInfo["NSAppleScriptErrorMessage"] as? String
+                                            ?? nsError.userInfo[NSLocalizedDescriptionKey] as? String
+                                            ?? error.localizedDescription
+                                        let code = nsError.userInfo["NSAppleScriptErrorNumber"] as? Int
+                                        musicPermissionError = code != nil ? "[\(code!)] \(message)" : message
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if let granted = musicPermissionGranted {
+                            Label(
+                                granted ? "Granted" : "Denied",
+                                systemImage: granted ? "checkmark.circle.fill" : "xmark.circle.fill"
+                            )
+                            .foregroundStyle(granted ? .green : .red)
+                            .font(.callout)
+                            .transition(.opacity.animation(.easeIn(duration: 0.2)))
+                        }
+                    }
+                    
+                    if let errorMessage = musicPermissionError {
+                        Text(errorMessage)
+                            .font(.caption)
+                            .foregroundStyle(.red.opacity(0.85))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .textSelection(.enabled)
+                    }
                 }
                 
                 Divider()
