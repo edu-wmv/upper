@@ -20,6 +20,7 @@ struct PlaybackState {
     var isShuffled: Bool = false
     var repeatMode: RepeatMode = .off
     var lastUpdated: Date = .distantPast
+    var isFavorite: Bool = false
 }
 
 enum RepeatMode: Int, Codable {
@@ -40,5 +41,6 @@ extension PlaybackState: Equatable {
         && lhs.duration == rhs.duration
         && lhs.isShuffled == rhs.isShuffled
         && lhs.repeatMode == rhs.repeatMode
+        && lhs.isFavorite == rhs.isFavorite
     }
 }

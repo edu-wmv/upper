@@ -50,8 +50,11 @@ class MediaManager: ObservableObject {
     @Published var playbackRate: Double = 1.0
     @Published var isShuffled: Bool = false
     @Published var repeatMode: RepeatMode = .off
+    @Published var isFavorite: Bool = false
     @Published var usingAppIconForArtwork: Bool = false
     @Published private(set) var skipGesturePulse: SkipGesturePulse?
+
+    var supportsFavorite: Bool { bundleIdentifier == "com.apple.Music" }
     
     private var artworkData: Data? = nil
     private var workItem: DispatchWorkItem?
@@ -228,6 +231,7 @@ class MediaManager: ObservableObject {
         if shuffleChanged { self.isShuffled = state.isShuffled }
         if state.bundleIdentifier != self.bundleIdentifier { self.bundleIdentifier = state.bundleIdentifier }
         if repeatModeChanged { self.repeatMode = state.repeatMode }
+        if state.isFavorite != self.isFavorite { self.isFavorite = state.isFavorite }
                 
         self.timestampDate = state.lastUpdated
     }
@@ -391,6 +395,12 @@ class MediaManager: ObservableObject {
             
             await controller.togglePlay()
         }
+    }
+    func toggleFavorite() {
+        guard supportsFavorite else { return }
+        let newFavorite = !isFavorite
+        isFavorite = newFavorite
+        Task { await activeController?.setFavorite(newFavorite) }
     }
     func seek(to position: TimeInterval) { Task { await activeController?.seek(to: position ) } }
     func seek(by offset: TimeInterval) {

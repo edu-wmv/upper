@@ -191,6 +191,7 @@ struct MinimalAlbumArtView: View {
             .buttonStyle(PlainButtonStyle())
             .opacity(mediaManager.isPlaying ? 1 : 0.4)
             .scaleEffect(mediaManager.isPlaying ? 1 : 0.85)
+            .focusable(false)
         }
     }
 }
@@ -223,12 +224,16 @@ struct MinimalPlaybackControlsView: View {
         switch control {
         case .favorite:
             controlButton(
-                icon: "star",
+                icon: mediaManager.isFavorite ? "star.fill" : "star",
                 size: 18,
-                pressEffect: .nudge(-skipMagnitude),
-                symbolEffect: .replace,
-                action: {}
+                isActive: mediaManager.isFavorite,
+                activeColor: Color(red: 1.0, green: 0.75, blue: 0.0),
+                pressEffect: .wiggle(.clockwise),
+                symbolEffect: .replaceAndBounce,
+                action: { mediaManager.toggleFavorite() }
             )
+            .opacity(mediaManager.supportsFavorite ? 1.0 : 0.3)
+            .allowsHitTesting(mediaManager.supportsFavorite)
         case .shuffle:
             controlButton(icon: "shuffle", isActive: mediaManager.isShuffled) {
                 Task { await mediaManager.toggleShuffle() }
@@ -438,6 +443,7 @@ private struct MinimalSquircleButton: View {
                 .contentShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
         }
         .buttonStyle(PlainButtonStyle())
+        .focusable(false)
         .offset(x: pressOffset)
         .rotationEffect(.degrees(rotationAngle))
         .onHover { hovering in

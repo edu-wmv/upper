@@ -20,6 +20,7 @@ protocol MediaControllerProtocol: ObservableObject {
     func togglePlay() async
     func toggleShuffle() async
     func toggleRepeat() async
+    func setFavorite(_ favorite: Bool) async
     func isActive() -> Bool
-    func updatePlaybackInfo() async 
+    func updatePlaybackInfo() async
 }
