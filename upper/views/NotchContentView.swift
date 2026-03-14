@@ -14,6 +14,7 @@ struct NotchContentView: View {
     
     @ObservedObject var coordinator = UpperViewCoordinator.shared
     
+    @State private var gestureProgress: CGFloat = .zero
     @State private var hoverTask: Task<Void, Never>?
     @State private var isHovering: Bool = false
     @State private var hoverClickMonitor: Any?
@@ -138,7 +139,14 @@ struct NotchContentView: View {
                             .padding(.top, 40)
                         Spacer()
                     } else {
-                        if viewModel.state == .open {
+                        if viewModel.state == .closed || viewModel.state == .liveExpanded {
+                            MediaLiveActicity(
+                                isHovering: isHovering,
+                                gestureProgress: gestureProgress,
+                                albumArtNamespace: albumArtNamespace,
+                                viewModel: viewModel
+                            )
+                        } else if viewModel.state == .open {
                             UpperHeaderView()
                                 .frame(height: max(32, viewModel.effectiveClosedNotchHeight))
                         } else {
@@ -294,4 +302,42 @@ struct NotchContentView: View {
             lastHapticTime = now
         }
     }
+}
+
+private func makeNotchPreviewViewModel() -> UpperViewModel {
+    let vm = UpperViewModel()
+    vm.closedNotchSize = CGSize(width: 180, height: 38)
+    vm._previewNotchHeight = 38
+    return vm
+}
+
+#Preview("Notch – Closed") {
+    let vm = makeNotchPreviewViewModel()
+    return NotchContentView()
+        .environmentObject(vm)
+        .frame(width: 640, height: 60)
+        .background(.black)
+        .onAppear {
+            MediaManager.shared.songTitle = "Lover of Mine"
+            MediaManager.shared.artistName = "5 Seconds of Summer"
+            MediaManager.shared.isPlaying = true
+            MediaManager.shared.isPlayerIdle = false
+            MediaManager.shared.avgColor = NSColor.systemPurple
+        }
+}
+
+#Preview("Notch – Open") {
+    let vm = makeNotchPreviewViewModel()
+    return NotchContentView()
+        .environmentObject(vm)
+        .frame(width: 640, height: 220)
+        .background(.black)
+        .onAppear {
+            MediaManager.shared.songTitle = "Lover of Mine"
+            MediaManager.shared.artistName = "5 Seconds of Summer"
+            MediaManager.shared.isPlaying = true
+            MediaManager.shared.isPlayerIdle = false
+            MediaManager.shared.avgColor = NSColor.systemPurple
+            vm.open()
+        }
 }

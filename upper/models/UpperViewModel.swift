@@ -53,6 +53,13 @@ class UpperViewModel: NSObject, ObservableObject {
         closedNotchSize = notchSize
         
         self.firstLaunch = true
+
+        coordinator.musicExpandSubject
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] (title, artist) in
+                self?.showMusicExpanding(title: title, artist: artist)
+            }
+            .store(in: &cancellables)
     }
     
     @MainActor
@@ -99,12 +106,35 @@ class UpperViewModel: NSObject, ObservableObject {
         sneakPeekTask?.cancel()
         sneakPeekTask = nil
         activeSneakPeek = nil
+        coordinator.musicExpandingTitle = ""
+        coordinator.musicExpandingArtist = ""
 
         withAnimation(AnimationLibrary.notchClose) {
             let targetSize = getClosedNotchSize(screen: screen)
             notchSize = targetSize
             closedNotchSize = targetSize
             state = .closed
+        }
+    }
+
+    // MARK: - Music expanding live activity
+
+    func showMusicExpanding(title: String, artist: String, duration: TimeInterval = 3.5) {
+        guard state == .closed || state == .liveExpanded else { return }
+        sneakPeekTask?.cancel()
+        coordinator.musicExpandingTitle = title
+        coordinator.musicExpandingArtist = artist
+        withAnimation(.smooth(duration: 0.25)) {
+            state = .liveExpanded
+        }
+        sneakPeekTask = Task { [weak self] in
+            try? await Task.sleep(for: .seconds(duration))
+            guard let self, !Task.isCancelled else { return }
+            withAnimation(.smooth(duration: 0.25)) {
+                self.coordinator.musicExpandingTitle = ""
+                self.coordinator.musicExpandingArtist = ""
+                self.state = .closed
+            }
         }
     }
 
@@ -175,8 +205,13 @@ class UpperViewModel: NSObject, ObservableObject {
         
         return adjustedSize
     }
-    
+
+    /// Override used exclusively by SwiftUI previews so the notch
+    /// renders correctly on machines without a physical notch display.
+    var _previewNotchHeight: CGFloat? = nil
+
     var effectiveClosedNotchHeight: CGFloat {
+        if let preview = _previewNotchHeight { return preview }
         let currentScreen = NSScreen.screens.first { $0.localizedName == screen }
         let noNotchAndFullscreen = currentScreen?.safeAreaInsets.top ?? 0 <= 0 || currentScreen == nil
         return noNotchAndFullscreen ? 0 : closedNotchSize.height

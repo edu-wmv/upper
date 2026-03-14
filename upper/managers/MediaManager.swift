@@ -277,14 +277,7 @@ class MediaManager: ObservableObject {
     
     private func updateSneakPeek() {
         guard !songTitle.isEmpty, !artistName.isEmpty else { return }
-        
-//        let config = SneakPeekConfig(
-//            type: .generic,
-//            title: "\(songTitle) - \(artistName)",
-//            duration: 3.5
-//        )
-        
-        //        coordinator.showSneakPeek(config) -> change into coordinator instead of viewmodel
+        coordinator.requestMusicExpand(title: songTitle, artist: artistName)
     }
     
     func forceUpdate() {

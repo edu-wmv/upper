@@ -15,7 +15,20 @@ class UpperViewCoordinator: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     
     @AppStorage("firstLaunch") var firstLaunch: Bool = true
-    
+
+    // MARK: - Music expanding live activity
+
+    @Published var musicExpandingTitle: String = ""
+    @Published var musicExpandingArtist: String = ""
+
+    let musicExpandSubject = PassthroughSubject<(title: String, artist: String), Never>()
+
+    func requestMusicExpand(title: String, artist: String) {
+        musicExpandSubject.send((title: title, artist: artist))
+    }
+
+    // MARK: - View routing
+
     @Published var currentView: NotchViews = .home {
         didSet {
             if Defaults[.enableMinimalMode] && currentView != .home {
