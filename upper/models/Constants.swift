@@ -20,7 +20,7 @@ extension Defaults.Keys {
     static let nonNotchHeightMode = Key<NotchHeightMode>("nonNotchHeightMode", default: .matchMenuBar)
     
     
-    static let enableMinimalMode = Key<Bool>("enableMinimalMode", default: false)
+    static let enableMinimalMode = Key<Bool>("enableMinimalMode", default: true)
     static let cornerRadiusScaling = Key<Bool>("cornerRadiusScaling", default: true)
     
     static let showOnAllDisplays = Key<Bool>("showOnAllDisplays", default: false)
