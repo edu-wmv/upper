@@ -54,10 +54,10 @@ class UpperViewModel: NSObject, ObservableObject {
         
         self.firstLaunch = true
 
-        coordinator.musicExpandSubject
+        coordinator.sneakPeekSubject
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] (title, artist) in
-                self?.showMusicExpanding(title: title, artist: artist)
+            .sink { [weak self] config in
+                self?.showSneakPeek(config)
             }
             .store(in: &cancellables)
     }
@@ -106,8 +106,6 @@ class UpperViewModel: NSObject, ObservableObject {
         sneakPeekTask?.cancel()
         sneakPeekTask = nil
         activeSneakPeek = nil
-        coordinator.musicExpandingTitle = ""
-        coordinator.musicExpandingArtist = ""
 
         withAnimation(AnimationLibrary.notchClose) {
             let targetSize = getClosedNotchSize(screen: screen)
@@ -117,33 +115,13 @@ class UpperViewModel: NSObject, ObservableObject {
         }
     }
 
-    // MARK: - Music expanding live activity
-
-    func showMusicExpanding(title: String, artist: String, duration: TimeInterval = 3.5) {
-        guard state == .closed || state == .liveExpanded else { return }
-        sneakPeekTask?.cancel()
-        coordinator.musicExpandingTitle = title
-        coordinator.musicExpandingArtist = artist
-        withAnimation(.smooth(duration: 0.25)) {
-            state = .liveExpanded
-        }
-        sneakPeekTask = Task { [weak self] in
-            try? await Task.sleep(for: .seconds(duration))
-            guard let self, !Task.isCancelled else { return }
-            withAnimation(.smooth(duration: 0.25)) {
-                self.coordinator.musicExpandingTitle = ""
-                self.coordinator.musicExpandingArtist = ""
-                self.state = .closed
-            }
-        }
-    }
-
     // MARK: - Sneak Peek
 
     func showSneakPeek(_ config: SneakPeekConfig) {
+        guard state != .open else { return }
         sneakPeekTask?.cancel()
 
-        let sneakSize = getSneakPeekSize(screen: screen, for: config.type)
+        let sneakSize = getSneakPeekSize(screen: screen, for: config)
 
         withAnimation(AnimationLibrary.sneakPeekOpen) {
             activeSneakPeek = config

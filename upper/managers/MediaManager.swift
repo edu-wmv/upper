@@ -164,7 +164,7 @@ class MediaManager: ObservableObject {
         } else {
             self.isPlaying = state
         }
-        
+
         self.updateIdleState(state: state)
     }
     
@@ -212,8 +212,9 @@ class MediaManager: ObservableObject {
             self.lastArtworkAlbum = state.album
             self.lastArtworkBundleIdentifier = state.bundleIdentifier
             
-            // TODO: - update sneak peek
-            
+           if !state.title.isEmpty && !state.artist.isEmpty {
+               self.updateSneakPeek()
+           }
         }
         
         let timeChanged = state.currentTime != self.elapsedTime
@@ -277,7 +278,17 @@ class MediaManager: ObservableObject {
     
     private func updateSneakPeek() {
         guard !songTitle.isEmpty, !artistName.isEmpty else { return }
-        coordinator.requestMusicExpand(title: songTitle, artist: artistName)
+        guard Defaults[.enableSneakPeek] && Defaults[.enableMediaLiveSneakPeek] else { return }
+
+        coordinator.requestSneakPeek(
+            SneakPeekConfig(
+                type: .media,
+                title: songTitle,
+                subtitle: artistName,
+                direction: Defaults[.mediaLiveSneakPeekDirection],
+                duration: 3.5
+            )
+        )
     }
     
     func forceUpdate() {

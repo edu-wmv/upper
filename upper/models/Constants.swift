@@ -34,5 +34,10 @@ extension Defaults.Keys {
     
     // MARK: Media playback
     static let mediaControlSlots = Key<[MediaControlButton]>("mediaControlSlots", default: MediaControlButton.defaultLayout)
-    
+    static let liveActivityTimeout = Key<Int>("liveActivityTimeout", default: 3000)
+
+    // MARK: Sneak Peek
+    static let enableSneakPeek = Key<Bool>("enableSneakPeek", default: true)
+    static let enableMediaLiveSneakPeek = Key<Bool>("enableMediaLiveSneakPeek", default: true)
+    static let mediaLiveSneakPeekDirection = Key<MediaLiveSneakPeekDirection>("mediaLiveSneakPeekDirection", default: .vertical)
 }

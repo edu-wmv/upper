@@ -11,14 +11,12 @@ import Defaults
 enum NotchState: Equatable, CustomStringConvertible {
     case closed
     case sneakPeek
-    case liveExpanded
     case open
 
     var description: String {
         switch self {
         case .closed: "Closed"
         case .sneakPeek: "Sneak Peek"
-        case .liveExpanded: "Live Expanded"
         case .open: "Open"
         }
     }
@@ -49,6 +47,20 @@ enum SliderColorEnum: String, CaseIterable, Defaults.Serializable {
             return String(localized: "Match Album Art")
         case .accent:
             return String(localized: "Match Accent Color")
+        }
+    }
+}
+
+enum MediaLiveSneakPeekDirection: String, CaseIterable, Identifiable, Defaults.Serializable {
+    case horizontal = "Horizontal"
+    case vertical = "Vertical"
+
+    var id: String { rawValue }
+
+    var localizedName: String {
+        switch self {
+        case .horizontal: return String(localized: "Horizontal")
+        case .vertical: return String(localized: "Vertical")
         }
     }
 }

@@ -36,18 +36,19 @@ let minimalCornerRadiusInsets: (opened: (top: CGFloat, bottom: CGFloat), closed:
 
 let sneakPeekCornerRadiusInsets: (top: CGFloat, bottom: CGFloat) = (top: 6, bottom: 16)
 
-func getSneakPeekSize(screen: String? = nil, for type: SneakContentType = .generic) -> CGSize {
+func getSneakPeekSize(screen: String? = nil, for config: SneakPeekConfig) -> CGSize {
     let closed = getClosedNotchSize(screen: screen)
-    let extraHeight: CGFloat = switch type {
+    let extraHeight: CGFloat = switch config.type {
     case .airpods:    36
     case .battery:    40
     case .volume, .brightness: 36
     case .generic:    36
+    case .media:
+        config.direction == .horizontal ? 30 : 36
     }
-    
-    // Minimal or no extra width to keep it looking like the original notch shape.
-    // Adding just a tiny bit (10) to make the bottom radii look natural.
-    return CGSize(width: closed.width + 10, height: closed.height + extraHeight)
+
+    let extraWidth: CGFloat = (config.type == .media && config.direction == .horizontal) ? 180 : 10
+    return CGSize(width: closed.width + extraWidth, height: closed.height + extraHeight)
 }
 
 func addShadowPadding(to size: CGSize, isMinimal: Bool) -> CGSize {
@@ -102,4 +103,9 @@ func getScreenFrame(_ screen: String? = nil) -> CGRect? {
     
     return nil
 
+}
+
+enum MediaPlayerImageSizes {
+    static let cornerRadiusInset: (opened: CGFloat, closed: CGFloat) = (opened: 13.0, closed: 4.0)
+    static let size = (opened: CGSize(width: 90, height: 90), closed: CGSize(width: 20, height: 20))
 }

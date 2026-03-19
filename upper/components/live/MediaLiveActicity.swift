@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import Defaults
 
 struct MediaLiveActicity: View {
     let isHovering: Bool
@@ -14,7 +15,6 @@ struct MediaLiveActicity: View {
 
     @ObservedObject var viewModel: UpperViewModel
     @ObservedObject private var mediaManager = MediaManager.shared
-    @ObservedObject private var coordinator = UpperViewCoordinator.shared
 
     // MARK: - Sizing
 
@@ -27,26 +27,14 @@ struct MediaLiveActicity: View {
     }
 
     private var centerBaseWidth: CGFloat {
-        viewModel.closedNotchSize.width + (isHovering ? 8 : 0)
-    }
-
-    private var effectiveCenterWidth: CGFloat {
-        isExpanding ? 380 : centerBaseWidth
-    }
-
-    private var isExpanding: Bool {
-        !coordinator.musicExpandingTitle.isEmpty
-    }
-
-    private var accentColor: Color {
-        Color(nsColor: mediaManager.avgColor).ensureMinimumBrightness(factor: 0.7)
+        max(96, (viewModel.closedNotchSize.width + (isHovering ? 8 : 0)))
     }
 
     // MARK: - Body
 
     var body: some View {
         Group {
-            if mediaManager.hasActiveSession {
+            if !mediaManager.isPlayerIdle {
                 liveActivityContent
             } else {
                 Rectangle()
@@ -57,7 +45,6 @@ struct MediaLiveActicity: View {
                     )
             }
         }
-        .animation(.smooth(duration: 0.25), value: isExpanding)
         .animation(.smooth(duration: 0.2), value: isHovering)
     }
 
@@ -69,13 +56,14 @@ struct MediaLiveActicity: View {
             leftWing
                 .frame(width: wingBaseWidth, height: notchContentHeight)
 
-            centerZone
-                .frame(width: effectiveCenterWidth, height: notchContentHeight)
+            Rectangle()
+                .fill(.black)
+                .frame(width: centerBaseWidth, height: notchContentHeight)
 
             rightWing
                 .frame(width: wingBaseWidth, height: notchContentHeight)
         }
-        .frame(height: viewModel.effectiveClosedNotchHeight + (isHovering ? 8 : 0))
+        .frame(height: viewModel.effectiveClosedNotchHeight + (isHovering ? 2 : 0))
     }
 
     // MARK: - Left wing (album art)
@@ -91,49 +79,13 @@ struct MediaLiveActicity: View {
                         .aspectRatio(contentMode: .fill)
                 )
                 .clipped()
-                .clipShape(RoundedRectangle(cornerRadius: MediaPlayerImageSizes.cornerRadiusInset.closed))
+                .clipShape(
+                    RoundedRectangle(cornerRadius: MediaPlayerImageSizes.cornerRadiusInset.closed)
+                )
                 .matchedGeometryEffect(id: "albumArt", in: albumArtNamespace)
                 .albumArtFlip(angle: mediaManager.flipAngle, direction: mediaManager.flipDirection)
         }
-    }
-
-    // MARK: - Center (hardware notch + optional expanding text)
-
-    @ViewBuilder
-    private var centerZone: some View {
-        Rectangle()
-            .fill(.black)
-            .overlay(
-                HStack(alignment: .center, spacing: 0) {
-                    if isExpanding {
-                        GeometryReader { _ in
-                            MarqueeText(
-                                .constant(coordinator.musicExpandingTitle),
-                                font: .system(size: 11, weight: .medium),
-                                nsFont: .caption1,
-                                textColor: accentColor,
-                                minDuration: 0.4,
-                                frameWidth: max(0, (effectiveCenterWidth - viewModel.closedNotchSize.width) / 2 - 12)
-                            )
-                        }
-                        .padding(.leading, 8)
-                        .opacity(isExpanding ? 1 : 0)
-                    }
-
-                    Spacer(minLength: viewModel.closedNotchSize.width)
-
-                    if isExpanding {
-                        Text(coordinator.musicExpandingArtist)
-                            .font(.system(size: 11, weight: .regular))
-                            .foregroundStyle(accentColor.opacity(0.8))
-                            .lineLimit(1)
-                            .truncationMode(.tail)
-                            .padding(.trailing, 8)
-                            .opacity(isExpanding ? 1 : 0)
-                    }
-                }
-                .clipped()
-            )
+        .padding(isHovering ? 6 : 0)
     }
 
     // MARK: - Right wing (spectrum)
@@ -157,61 +109,19 @@ private func makePreviewViewModel(notchHeight: CGFloat = 38) -> UpperViewModel {
     return vm
 }
 
-#Preview("Live Activity – Playing") {
+#Preview("Media Live Activity") {
+    @Previewable @State var hovering: Bool = false
     let vm = makePreviewViewModel()
-    return MediaLiveActicity(
-        isHovering: false,
+    
+    MediaLiveActicity(
+        isHovering: hovering,
         gestureProgress: 0,
         albumArtNamespace: Namespace().wrappedValue,
         viewModel: vm
     )
     .background(.black)
-    .frame(width: 420, height: 60)
-    .onAppear {
-        MediaManager.shared.songTitle = "Lover of Mine"
-        MediaManager.shared.artistName = "5 Seconds of Summer"
-        MediaManager.shared.isPlaying = true
-        MediaManager.shared.isPlayerIdle = false
-        MediaManager.shared.avgColor = NSColor.systemPurple
-    }
-}
-
-#Preview("Live Activity – Expanding") {
-    let vm = makePreviewViewModel()
-    return MediaLiveActicity(
-        isHovering: false,
-        gestureProgress: 0,
-        albumArtNamespace: Namespace().wrappedValue,
-        viewModel: vm
-    )
-    .background(.black)
-    .frame(width: 460, height: 60)
-    .onAppear {
-        MediaManager.shared.songTitle = "Lover of Mine"
-        MediaManager.shared.artistName = "5 Seconds of Summer"
-        MediaManager.shared.isPlaying = true
-        MediaManager.shared.isPlayerIdle = false
-        MediaManager.shared.avgColor = NSColor.systemPurple
-        UpperViewCoordinator.shared.musicExpandingTitle = "Lover of Mine"
-        UpperViewCoordinator.shared.musicExpandingArtist = "5 Seconds of Summer"
-    }
-}
-
-#Preview("Live Activity – Hovering") {
-    let vm = makePreviewViewModel()
-    return MediaLiveActicity(
-        isHovering: true,
-        gestureProgress: 0,
-        albumArtNamespace: Namespace().wrappedValue,
-        viewModel: vm
-    )
-    .background(.black)
-    .frame(width: 420, height: 60)
-    .onAppear {
-        MediaManager.shared.songTitle = "Lover of Mine"
-        MediaManager.shared.artistName = "5 Seconds of Summer"
-        MediaManager.shared.isPlaying = true
-        MediaManager.shared.isPlayerIdle = false
-        MediaManager.shared.avgColor = NSColor.systemBlue
+    .frame(width: 500, height: 60)
+    .onHover { isHovering in
+        hovering = isHovering
     }
 }

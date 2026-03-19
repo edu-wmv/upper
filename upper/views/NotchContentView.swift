@@ -13,6 +13,7 @@ struct NotchContentView: View {
     @EnvironmentObject var viewModel: UpperViewModel
     
     @ObservedObject var coordinator = UpperViewCoordinator.shared
+    @ObservedObject var mediaManager = MediaManager.shared
     
     @State private var gestureProgress: CGFloat = .zero
     @State private var hoverTask: Task<Void, Never>?
@@ -25,10 +26,21 @@ struct NotchContentView: View {
     @Namespace var albumArtNamespace
     
     @Default(.enableMinimalMode) var enableMinimalMode
+
+    // MARK: - Pre-computed values
     
     var dynamicNotchSize: CGSize {
         let baseSize = enableMinimalMode ? minimalOpenNotchSize : openNotchSize
         return baseSize
+    }
+
+    private var sneakPeekWidth: CGFloat {
+        if viewModel.state == .sneakPeek, viewModel.activeSneakPeek?.type == .media {
+            let wingWidth = max(0, viewModel.effectiveClosedNotchHeight - (isHovering ? 0 : 12) + gestureProgress / 2)
+            return viewModel.closedNotchSize.width + wingWidth * 2
+        }
+
+        return viewModel.closedNotchSize.width
     }
     
     var body: some View {
@@ -112,75 +124,75 @@ struct NotchContentView: View {
     
     @ViewBuilder
     func NotchLayout() -> some View {
-        if viewModel.state == .sneakPeek, let config = viewModel.activeSneakPeek {
-            SneakPeekView(
-                config: config,
-                closedNotchWidth: viewModel.closedNotchSize.width,
-                notchHeight: viewModel.effectiveClosedNotchHeight
-            )
-            .transition(
-                .move(edge: .top)
-                .combined(with: .blurReplace)
-            )
-            .animation(.bouncy, value: viewModel.activeSneakPeek)
-        } else {
-            VStack(alignment: .leading) {
-                VStack(alignment: .leading) {
-                    if coordinator.firstLaunch {
-                        Spacer()
-                        HelloAnimation()
-                            .frame(width: 200, height: 80)
-                            .onAppear(perform: {
-                                viewModel.closeHello()
-                            })
-                            .onDisappear {
-                                coordinator.firstLaunch = false
-                            }
-                            .padding(.top, 40)
-                        Spacer()
-                    } else {
-                        if viewModel.state == .closed || viewModel.state == .liveExpanded {
-                            MediaLiveActicity(
-                                isHovering: isHovering,
-                                gestureProgress: gestureProgress,
-                                albumArtNamespace: albumArtNamespace,
-                                viewModel: viewModel
-                            )
-                        } else if viewModel.state == .open {
-                            UpperHeaderView()
-                                .frame(height: max(32, viewModel.effectiveClosedNotchHeight))
-                        } else {
-                            Rectangle()
-                                .fill(.clear)
-                                .frame(
-                                    width: viewModel.closedNotchSize.width - 20,
-                                    height: viewModel.effectiveClosedNotchHeight
-                                )
-                        }
-                    }
+        let hasMediaMetadata = !mediaManager.songTitle.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).isEmpty
+                            || !mediaManager.artistName.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines).isEmpty
+        let hasMediaSnapshot: Bool = {
+            if mediaManager.isPlaying { return true }
+            return !mediaManager.isPlayerIdle && hasMediaMetadata
+        }()
+        let isMediaEligible = (viewModel.state == .closed || viewModel.state == .sneakPeek) && hasMediaSnapshot
+        
+        VStack(alignment: .leading, spacing: 0) {
+            Group {
+               if coordinator.firstLaunch {
+                   Spacer()
+                   HelloAnimation()
+                       .frame(width: 200, height: 80)
+                       .onAppear { viewModel.closeHello() }
+                       .padding(.top, 40)
+                       .padding(.horizontal, 30)
+                   Spacer()
+               } else if viewModel.state == .open {
+                    UpperHeaderView()
+                        .frame(height: max(32, viewModel.effectiveClosedNotchHeight))
+                } else if isMediaEligible {
+                     MediaLiveActicity(
+                         isHovering: isHovering,
+                         gestureProgress: gestureProgress,
+                         albumArtNamespace: albumArtNamespace,
+                         viewModel: viewModel
+                     )
+                } else {
+                    Rectangle()
+                        .fill(.clear)
+                        .frame(
+                            width: viewModel.closedNotchSize.width - 20,
+                            height: viewModel.effectiveClosedNotchHeight
+                        )
                 }
-                .zIndex(2)
-
-                ZStack {
-                    if viewModel.state == .open {
-                        Group {
-                            switch coordinator.currentView {
-                            case .home:
-                                UpperHomeView(albumArtNamespace: albumArtNamespace)
-                            case .shelf:
-                                EmptyView()
-                            case .sharing:
-                                EmptyView()
-                            }
-                        }
-                        .id(coordinator.currentView)
-                    }
-                }
-                .zIndex(1)
             }
+            .zIndex(2)
+
+            ZStack {
+                if viewModel.state == .open {
+                    Group {
+                        switch coordinator.currentView {
+                        case .home:
+                            UpperHomeView(albumArtNamespace: albumArtNamespace)
+                        case .shelf:
+                            EmptyView()
+                        case .sharing:
+                            EmptyView()
+                        }
+                    }
+                    .id(coordinator.currentView)
+                } else if viewModel.state == .sneakPeek, let config = viewModel.activeSneakPeek {
+                    SneakPeekView(
+                        config: config,
+                        currentNotchWidth: sneakPeekWidth,
+                        notchHeight: 0
+                    )
+                    .transition(
+                        .move(edge: .top)
+                        .combined(with: .blurReplace)
+                    )
+                    .animation(.bouncy, value: viewModel.activeSneakPeek)
+                }
+            }
+            .zIndex(1)
         }
     }
-    
+
     private func hasAnyActivePopovers() -> Bool {
         return viewModel.isMediaOutputPopoverActive
     }
@@ -202,7 +214,7 @@ struct NotchContentView: View {
     private var currentShape: NotchShape {
         let topRadius: CGFloat
         let bottomRadius: CGFloat
-
+        
         switch viewModel.state {
         case .open where Defaults[.cornerRadiusScaling]:
             topRadius = activeCornerRadiusInset.opened.top
@@ -214,7 +226,7 @@ struct NotchContentView: View {
             topRadius = activeCornerRadiusInset.closed.top
             bottomRadius = activeCornerRadiusInset.closed.bottom
         }
-
+        
         return NotchShape(topRadius: topRadius, bottomRadius: bottomRadius)
     }
     
@@ -223,7 +235,7 @@ struct NotchContentView: View {
     private var canHoverOpen: Bool {
         viewModel.state == .closed || viewModel.state == .sneakPeek
     }
-
+    
     private func handleHover(_ hovering: Bool) {
         hoverTask?.cancel()
         
@@ -234,7 +246,7 @@ struct NotchContentView: View {
         }
         
         if hovering {
-            withAnimation(.smooth) {
+            withAnimation(.smooth.speed(1.2)) {
                 isHovering = true
             }
             
@@ -245,7 +257,7 @@ struct NotchContentView: View {
             guard canHoverOpen else { return }
             
             hoverTask = Task {
-                try? await Task.sleep(for: .seconds(0.5))
+                try? await Task.sleep(for: .seconds(0.35))
                 guard !Task.isCancelled else { return }
                 
                 await MainActor.run {
@@ -315,15 +327,8 @@ private func makeNotchPreviewViewModel() -> UpperViewModel {
     let vm = makeNotchPreviewViewModel()
     return NotchContentView()
         .environmentObject(vm)
-        .frame(width: 640, height: 60)
-        .background(.black)
-        .onAppear {
-            MediaManager.shared.songTitle = "Lover of Mine"
-            MediaManager.shared.artistName = "5 Seconds of Summer"
-            MediaManager.shared.isPlaying = true
-            MediaManager.shared.isPlayerIdle = false
-            MediaManager.shared.avgColor = NSColor.systemPurple
-        }
+        .frame(width: 600, height: 200)
+        .background(.black.opacity(0.3))
 }
 
 #Preview("Notch – Open") {
@@ -331,13 +336,8 @@ private func makeNotchPreviewViewModel() -> UpperViewModel {
     return NotchContentView()
         .environmentObject(vm)
         .frame(width: 640, height: 220)
-        .background(.black)
+        .background(.black.opacity(0.3))
         .onAppear {
-            MediaManager.shared.songTitle = "Lover of Mine"
-            MediaManager.shared.artistName = "5 Seconds of Summer"
-            MediaManager.shared.isPlaying = true
-            MediaManager.shared.isPlayerIdle = false
-            MediaManager.shared.avgColor = NSColor.systemPurple
             vm.open()
         }
 }

@@ -16,15 +16,12 @@ class UpperViewCoordinator: ObservableObject {
     
     @AppStorage("firstLaunch") var firstLaunch: Bool = true
 
-    // MARK: - Music expanding live activity
+    // MARK: - Sneak Peek
 
-    @Published var musicExpandingTitle: String = ""
-    @Published var musicExpandingArtist: String = ""
+    let sneakPeekSubject = PassthroughSubject<SneakPeekConfig, Never>()
 
-    let musicExpandSubject = PassthroughSubject<(title: String, artist: String), Never>()
-
-    func requestMusicExpand(title: String, artist: String) {
-        musicExpandSubject.send((title: title, artist: artist))
+    func requestSneakPeek(_ config: SneakPeekConfig) {
+        sneakPeekSubject.send(config)
     }
 
     // MARK: - View routing
