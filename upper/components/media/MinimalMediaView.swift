@@ -59,7 +59,7 @@ struct MinimalMediaView: View {
                             
                             Text(mediaManager.artistName)
                                 .font(.system(size: 10, weight: .regular))
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(.gray)
                                 .lineLimit(1)
                         }
                         .frame(width: textWidth, alignment: .leading)
