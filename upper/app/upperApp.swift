@@ -14,10 +14,10 @@ struct upperApp: App {
     @Environment(\.openWindow) var openWindow
 
     var body: some Scene {
-        Settings {
-            Text("upper Settings")
-                .frame(width: 400, height: 300)
-        }
+//        Settings {
+//            Text("upper Settings")
+//                .frame(width: 400, height: 300)
+//        }
 
         MenuBarExtra("upper", systemImage: "sparkle") {
             SettingsLink {
