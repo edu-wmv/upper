@@ -32,7 +32,6 @@ class UpperViewModel: NSObject, ObservableObject {
     @Published var activeSneakPeek: SneakPeekConfig? = nil
     private var sneakPeekTask: Task<Void, Never>?
 
-    @AppStorage("firstLaunch") var firstLaunch: Bool = true
     @AppStorage("hoverDuration") var hoverDuration: Double = 0.3
 
     // MARK: - Gesture tracking
@@ -51,8 +50,6 @@ class UpperViewModel: NSObject, ObservableObject {
         self.screen = screen
         notchSize = getClosedNotchSize()
         closedNotchSize = notchSize
-        
-        self.firstLaunch = true
 
         coordinator.sneakPeekSubject
             .receive(on: DispatchQueue.main)
@@ -149,16 +146,6 @@ class UpperViewModel: NSObject, ObservableObject {
         close()
     }
     
-    func closeHello() {
-        DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) { [weak self] in
-            self?.coordinator.firstLaunch = false
-            withAnimation(.smooth) {
-                self?.close()
-                self?.firstLaunch = false
-            }
-        }
-    }
-
     // MARK: - Hover
 
     func isMouseHovering(position: NSPoint = NSEvent.mouseLocation) -> Bool {

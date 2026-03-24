@@ -14,8 +14,6 @@ class UpperViewCoordinator: ObservableObject {
     static let shared = UpperViewCoordinator()
     private var cancellables = Set<AnyCancellable>()
     
-    @AppStorage("firstLaunch") var firstLaunch: Bool = true
-
     // MARK: - Sneak Peek
 
     let sneakPeekSubject = PassthroughSubject<SneakPeekConfig, Never>()

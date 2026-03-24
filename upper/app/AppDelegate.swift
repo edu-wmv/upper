@@ -22,6 +22,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var window: NSWindow?
     var windows: [NSScreen: NSWindow] = [:]
     private var previousScreens: [NSScreen]?
+    private var welcomeOverlayWindow: NSWindow?
     
     @ObservedObject var coordinator = UpperViewCoordinator.shared
     
@@ -66,6 +67,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         self.window = window
         adjustWindowPosition(changeAlpha: true)
+
+        if WelcomeExperience.shared.shouldShowWelcome {
+            let screen = NSScreen.main ?? NSScreen.screens.first!
+            setupWelcomeOverlay(on: screen)
+
+            Task { @MainActor in
+                await WelcomeExperience.shared.runSequence(viewModel: viewModel)
+                teardownWelcomeOverlay()
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -103,6 +114,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return window
     }
     
+    // MARK: - Welcome overlay
+
+    private func setupWelcomeOverlay(on screen: NSScreen) {
+        let panel = NSPanel(
+            contentRect: screen.frame,
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.level = .mainMenu + 1
+        panel.ignoresMouseEvents = true
+        panel.hasShadow = false
+        panel.animationBehavior = .none
+        panel.collectionBehavior = [.stationary, .canJoinAllSpaces, .fullScreenAuxiliary]
+
+        panel.contentView = NSHostingView(rootView: WelcomeOverlayView())
+        panel.setFrame(screen.frame, display: true)
+        panel.orderFrontRegardless()
+
+        welcomeOverlayWindow = panel
+    }
+
+    private func teardownWelcomeOverlay() {
+        welcomeOverlayWindow?.close()
+        welcomeOverlayWindow = nil
+    }
+
     private func cleanupWindows(shouldInvert: Bool = false) {
         if shouldInvert ? !Defaults[.showOnAllDisplays] : Defaults[.showOnAllDisplays] {
             for window in windows.values {

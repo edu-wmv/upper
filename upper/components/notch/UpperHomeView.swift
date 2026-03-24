@@ -10,17 +10,12 @@ import Defaults
 
 struct UpperHomeView: View {
     @EnvironmentObject var viewModel: UpperViewModel
-    @ObservedObject var coordinator: UpperViewCoordinator = .shared
     
     let albumArtNamespace: Namespace.ID
     
     var body: some View {
-        Group {
-            if !coordinator.firstLaunch {
-                mainContent
-            }
-        }
-        .transition(.opacity.combined(with: .blurReplace))
+        mainContent
+            .transition(.opacity.combined(with: .blurReplace))
     }
     
     private var mainContent: some View {

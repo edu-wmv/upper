@@ -14,6 +14,7 @@ struct NotchContentView: View {
     
     @ObservedObject var coordinator = UpperViewCoordinator.shared
     @ObservedObject var mediaManager = MediaManager.shared
+    @ObservedObject var welcome = WelcomeExperience.shared
     
     @State private var gestureProgress: CGFloat = .zero
     @State private var hoverTask: Task<Void, Never>?
@@ -31,6 +32,12 @@ struct NotchContentView: View {
     
     var dynamicNotchSize: CGSize {
         let baseSize = enableMinimalMode ? minimalOpenNotchSize : openNotchSize
+        if isWelcomeTarget && viewModel.state == .open {
+            let headerHeight = max(32, viewModel.effectiveClosedNotchHeight)
+            let verticalPadding: CGFloat = 12 + 12 + 6
+            let needed = headerHeight + welcome.contentHeight + verticalPadding
+            return CGSize(width: baseSize.width, height: max(baseSize.height, needed))
+        }
         return baseSize
     }
 
@@ -54,6 +61,16 @@ struct NotchContentView: View {
                 )
                 .onChange(of: dynamicNotchSize) { oldSize, newSize in
                     guard oldSize != newSize else { return }
+                    if isWelcomeTarget && welcome.phase == .narrating {
+                        withAnimation(.smooth(duration: 0.35)) {
+                            viewModel.notchSize = newSize
+                        }
+                        AppDelegate.shared?.ensureWindowSize(
+                            addShadowPadding(to: newSize, isMinimal: enableMinimalMode),
+                            animated: true,
+                            force: true
+                        )
+                    }
                     Task { @MainActor in
                         try? await Task.sleep(for: .milliseconds(100))
                         viewModel.shouldRecheckHover.toggle()
@@ -105,9 +122,11 @@ struct NotchContentView: View {
                 view
                     .contentShape(currentShape)
                     .onHover { hovering in
+                        guard !isWelcomeTarget else { return }
                         handleHover(hovering)
                     }
                     .onTapGesture {
+                        guard !isWelcomeTarget else { return }
                         if canHoverOpen && Defaults[.enableHaptics] {
                             triggerHaptic()
                         }
@@ -134,14 +153,10 @@ struct NotchContentView: View {
         
         VStack(alignment: .leading, spacing: 0) {
             Group {
-               if coordinator.firstLaunch {
-                   Spacer()
-                   HelloAnimation()
-                       .frame(width: 200, height: 80)
-                       .onAppear { viewModel.closeHello() }
-                       .padding(.top, 40)
-                       .padding(.horizontal, 30)
-                   Spacer()
+               if isWelcomeTarget && viewModel.state == .open {
+                    Rectangle()
+                        .fill(.clear)
+                        .frame(height: max(32, viewModel.effectiveClosedNotchHeight))
                } else if viewModel.state == .open {
                     UpperHeaderView()
                         .frame(height: max(32, viewModel.effectiveClosedNotchHeight))
@@ -164,7 +179,10 @@ struct NotchContentView: View {
             .zIndex(2)
 
             ZStack {
-                if viewModel.state == .open {
+                if isWelcomeTarget && viewModel.state == .open && welcome.phase != .notchClosing {
+                    WelcomeNarrationView()
+                        .transition(.opacity)
+                } else if viewModel.state == .open {
                     Group {
                         switch coordinator.currentView {
                         case .home:
@@ -197,8 +215,12 @@ struct NotchContentView: View {
         return viewModel.isMediaOutputPopoverActive
     }
     
+    private var isWelcomeTarget: Bool {
+        welcome.isTarget(viewModel)
+    }
+
     private func shouldPreventAutoClose() -> Bool {
-        coordinator.firstLaunch || hasAnyActivePopovers()
+        isWelcomeTarget || hasAnyActivePopovers()
     }
     
     // MARK: - Shape

@@ -10,6 +10,7 @@ import Defaults
 
 struct DebugView: View {
     @ObservedObject var viewModel: UpperViewModel
+    @ObservedObject var welcome = WelcomeExperience.shared
     
     @Default(.enableMinimalMode) var enableMinimalMode: Bool
     @State private var musicPermissionGranted: Bool? = nil
@@ -82,6 +83,23 @@ struct DebugView: View {
                             .foregroundStyle(.red.opacity(0.85))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .textSelection(.enabled)
+                    }
+                }
+                
+                Divider()
+                
+                Text("Welcome")
+                HStack(spacing: 12) {
+                    Button("Reset Welcome") {
+                        welcome.reset()
+                    }
+                    Text(welcome.hasCompleted ? "Completed" : "Pending")
+                        .font(.caption)
+                        .foregroundStyle(welcome.hasCompleted ? .green : .orange)
+                    if welcome.isActive {
+                        Text("Phase: \(String(describing: welcome.phase))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 
